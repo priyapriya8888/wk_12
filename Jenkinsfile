@@ -4,16 +4,15 @@ pipeline {
     stages {
 
         stage('Run Selenium Tests with pytest') {
-            steps {
-                echo "Running Selenium Tests using pytest"
+    steps {
+        echo "Running Selenium Tests using pytest"
 
-                // Install Python dependencies
-                bat 'pip install -r requirements.txt'
+        // Use full Python path to ensure Jenkins recognizes it
+        bat '"C:\\Users\\Vishnupriya\\AppData\\Local\\Programs\\Python\\Python312\\python.exe" -m pip install -r requirements.txt'
+        bat '"C:\\Users\\Vishnupriya\\AppData\\Local\\Programs\\Python\\Python312\\python.exe" -m pytest -v'
+    }
+}
 
-                // Run pytest
-                bat 'pytest -v'
-            }
-        }
 
         stage('Build Docker Image') {
             steps {
