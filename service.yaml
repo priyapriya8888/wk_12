@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: seleniumtestdemoapp-service
+spec:
+  selector:
+    app: seleniumtestdemoapp
+  ports:
+    - protocol: TCP
+      port: 5000        # Port exposed by the service
+      targetPort: 5000  # Port of the container
+      nodePort: 32233   # NodePort for external access
+  type: NodePort
