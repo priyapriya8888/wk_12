@@ -70,10 +70,14 @@ def setup_teardown():
     chrome_options.add_argument("--disable-dev-shm-usage")
 
     # Automatically install the right ChromeDriver version
-    driver = webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
-        options=chrome_options
-    )
+    from webdriver_manager.core.utils import ChromeType
+
+driver = webdriver.Chrome(
+    service=Service(ChromeDriverManager(driver_version="141.0.7390.123").install()),
+    options=chrome_options
+)
+
+
 
     driver.maximize_window()
     yield driver
