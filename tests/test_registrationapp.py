@@ -4,6 +4,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.alert import Alert
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 import subprocess
 import time
 import requests
@@ -18,49 +19,69 @@ def start_flask_app():
     """
     Start the Flask app before running tests and stop it afterwards.
     """
-    print(" Starting Flask app...")
+    print("🚀 Starting Flask app...")
     process = subprocess.Popen(
         ["python", "app.py"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        creationflags=subprocess.CREATE_NEW_PROCESS_GROUP  # needed for Windows
+        creationflags=subprocess.CREATE_NEW_PROCESS_GROUP  # required for Windows
     )
 
-    # Wait a few seconds for server startup
+    # Wait for Flask to start
     time.sleep(5)
 
     # Verify app is running
     try:
         requests.get("http://127.0.0.1:5000")
-        print(" Flask app is running.")
+        print("✅ Flask app is running.")
     except requests.exceptions.ConnectionError:
         process.kill()
-        pytest.fail(" Flask app did not start properly.")
+        pytest.fail("❌ Flask app did not start properly.")
 
     yield  # Run all tests
 
     # Stop Flask after all tests
-    print(" Shutting down Flask app...")
+    print("🛑 Shutting down Flask app...")
     try:
         process.send_signal(signal.CTRL_BREAK_EVENT)
         time.sleep(2)
         process.kill()
-        print(" Flask app stopped.")
+        print("✅ Flask app stopped.")
     except Exception as e:
-        print(f" Error stopping Flask app: {e}")
+        print(f"⚠️ Error stopping Flask app: {e}")
 
 # ------------------------------------------------------------
-# Fixture: Selenium WebDriver setup/teardown
+# Fixture: Selenium WebDriver setup/teardown (auto ChromeDriver)
 # ------------------------------------------------------------
 @pytest.fixture
 def setup_teardown():
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+    """
+    Setup Selenium WebDriver with correct ChromeDriver version
+    matching the system Chrome automatically.
+    """
+
+    print("🔧 Launching Chrome browser...")
+
+    # Chrome options (optional headless mode for Jenkins)
+    chrome_options = Options()
+    # Uncomment below line if you want headless in Jenkins
+    # chrome_options.add_argument("--headless=new")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+
+    # Automatically install the right ChromeDriver version
+    driver = webdriver.Chrome(
+        service=Service(ChromeDriverManager().install()),
+        options=chrome_options
+    )
+
     driver.maximize_window()
     yield driver
+    print("🧹 Closing browser...")
     driver.quit()
 
 # ------------------------------------------------------------
-#  Helper: Handle alert safely
+# Helper: Handle alert safely
 # ------------------------------------------------------------
 def get_alert_text(driver):
     alert = Alert(driver)
@@ -69,7 +90,7 @@ def get_alert_text(driver):
     return text
 
 # ------------------------------------------------------------
-#  Tests
+# Tests
 # ------------------------------------------------------------
 
 # Test 1: Empty username
